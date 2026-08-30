@@ -28,7 +28,7 @@ const authorize = (...allowredRoles) => {
                 message: "User not Authenticated"
             });
         }
-        const hashPermission = allowredRoles.includes(user.req.role);
+        const hashPermission = allowredRoles.includes(req.user.role);
 
         if (!hashPermission) {
             return res.status(403).json({
