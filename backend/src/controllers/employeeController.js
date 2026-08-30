@@ -32,6 +32,10 @@ const createEmployee = async (req, res) => {
             });
         }
 
+        const positionDetails = await Position.findOne({
+            name: position,
+        });
+
         const employee = await Employee.create({
             name, email, phone, position, location, joiningDate, hourlyRate,
         });
