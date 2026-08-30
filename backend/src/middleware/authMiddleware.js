@@ -21,14 +21,21 @@ const protect=(req,res,next)=>{
     }
 };
 
-const authorize=(...roles)=>{
+const authorize=(...allowredRoles)=>{
     return (req,res,next)=>{
-        if(!roles.includes(req.user.role)){
-            return res.status(403).json({
-                message:"Access denied. You are not authorized"
+        if(req.user){
+            return res.status(401).json({
+                message:"User not Authenticated"
             });
         }
-        next();
+const hashPermission=allowredRoles.includes(user.req.role);
+
+if(!hashPermission){
+    return res.status(403).json({
+        message:"Access denied. You do not have permission.",
+    });
+}
+next();
     };
 };
 module.exports={protect,authorize,}
