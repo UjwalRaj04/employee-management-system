@@ -10,7 +10,6 @@ const createEmployee = async (req, res) => {
             position,
             location,
             joiningDate,
-            hourlyRate,
         } = req.body
         if (
             !name ||
