@@ -23,7 +23,7 @@ const positionSchema=new mongoose.Schema(
     },
     {
         timestamps:true,
-        
+        collection:"Positions"
     }
 );
 
