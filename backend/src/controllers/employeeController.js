@@ -36,14 +36,16 @@ const createEmployee = async (req, res) => {
             name: position,
         });
 
-        if(!positionDetails){
+        if (!positionDetails) {
             return res.status(400).json({
-                message:"Invalid position. No pay configuration found",
+                message: "Invalid position. No pay configuration found",
             });
         }
+        console.log("Position received from request:", position);
+        console.log("Position found in database:", positionDetails);
 
         const employee = await Employee.create({
-            name, email, phone, position:positionDetails.name, location, joiningDate, pay:positionDetails.pay,payPeriod:positionDetails.payPeriod,
+            name, email, phone, position: positionDetails.name, location, joiningDate, pay: positionDetails.pay, payPeriod: positionDetails.payPeriod,
         });
         res.status(201).json({
             message: "Employee created Successfully", employee
