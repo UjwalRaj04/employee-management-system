@@ -3,6 +3,7 @@ const Position = require("../models/Position");
 //creating an employee
 const createEmployee = async (req, res) => {
     try {
+        console.log("CREATE EMPLOYEE CALLED");
         const {
             name,
             email,
