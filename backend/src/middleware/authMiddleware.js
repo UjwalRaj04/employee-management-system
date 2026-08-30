@@ -1,5 +1,5 @@
 const jwt=require("jsonwebtoken")
-
+const User=require("../models/User")
 const protect=(req,res,next)=>{
     try{
         const authHeader=req.headers.authorization;
@@ -20,4 +20,15 @@ const protect=(req,res,next)=>{
         });
     }
 };
-module.exports={protect,}
+
+const authorize=(...roles)=>{
+    return (req,res,next)=>{
+        if(!roles.includes(req.user.role)){
+            return res.status(403).json({
+                message:"Access denied. You are not authorized"
+            });
+        }
+        next();
+    };
+};
+module.exports={protect,authorize,}
