@@ -18,3 +18,7 @@ const positionSchema=new mongoose.Schema(
         timestamps:true
     }
 );
+
+const Position=mongoose.model("Position",positionSchema);
+
+module.exports=Position;
