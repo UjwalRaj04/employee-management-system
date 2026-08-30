@@ -45,15 +45,21 @@ const employeeSchema = new mongoose.Schema(
             default: "active",
         },
 
-        hourlyRate: {
+        pay: {
             type: Number,
             required: true,
             min: 0,
         },
 
+        payPeriod:{
+            type:String,
+            enum:["hourly","monthly"],
+            required:true,
+            
+         }
     },
-    {
-        timestamps: true,
+{
+    timestamps: true,
     }
 );
 
