@@ -4,7 +4,7 @@ const { createEmployee, getEmployees,getEmployeesById,updateEmployee,deleteEmplo
 const { protect,authorize } = require("../middleware/authMiddleware");
 
 const router = express.Router();
-router.post("/", protect,authorize,createEmployee);
+router.post("/", protect,authorize("admin","manager"),createEmployee);
 router.get("/",protect,getEmployees);
 router.get("/:id",protect,getEmployeesById)
 router.put("/:id",protect,updateEmployee)
