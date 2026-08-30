@@ -23,7 +23,7 @@ const protect = (req, res, next) => {
 
 const authorize = (...allowredRoles) => {
     return (req, res, next) => {
-        if (req.user) {
+        if (!req.user) {
             return res.status(401).json({
                 message: "User not Authenticated"
             });
