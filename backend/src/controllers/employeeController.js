@@ -12,7 +12,15 @@ const createEmployee = async (req, res) => {
             joiningDate,
             hourlyRate,
         } = req.body
-        if (!name || !email || !phone || !position || !location || !joiningDate || !hourlyRate === undefined) {
+        if (
+            !name ||
+            !email ||
+            !phone ||
+            !position ||
+            !location ||
+            !joiningDate ||
+            hourlyRate === undefined
+        ) {
             return res.status(400).json({
                 message: "All employee fields are required",
             });
