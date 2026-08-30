@@ -1,5 +1,5 @@
 const Employee = require("../models/Employee")
-
+const Position = require("../models/Position");
 //creating an employee
 const createEmployee = async (req, res) => {
     try {
