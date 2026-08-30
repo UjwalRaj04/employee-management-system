@@ -98,7 +98,7 @@ const updateEmployee = async (req, res) => {
         const employee = await Employee.findByIdAndUpdate(employeeId,
             { $set: updates },
             {
-                new: true,
+                returnDocument: "after",
                 runValidators: true,
             }
         );
