@@ -7,6 +7,6 @@ const router = express.Router();
 router.post("/", protect,authorize("admin","manager"),createEmployee);
 router.get("/",protect,getEmployees);
 router.get("/:id",protect,getEmployeesById)
-router.put("/:id",protect,updateEmployee)
-router.delete("/:id",protect,deleteEmployee)
+router.put("/:id",protect,authorize("admin","manager"),updateEmployee)
+router.delete("/:id",protect,authorize("admin"),deleteEmployee)
 module.exports = router;
