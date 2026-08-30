@@ -41,9 +41,9 @@ const createEmployee = async (req, res) => {
                 message:"Invalid position. No pay configuration found",
             });
         }
-        
+
         const employee = await Employee.create({
-            name, email, phone, position, location, joiningDate, hourlyRate,
+            name, email, phone, position:positionDetails.name, location, joiningDate, pay:positionDetails.pay,payPeriod:positionDetails.payPeriod,
         });
         res.status(201).json({
             message: "Employee created Successfully", employee
