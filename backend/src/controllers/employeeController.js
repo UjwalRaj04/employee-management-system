@@ -112,6 +112,22 @@ const updateEmployee = async (req, res) => {
 
         const updates = req.body
 
+        if(updates.position){
+            const positionDetails=await Position.findOne({
+                name:updates.position,
+            });
+
+            if(!positionDetails){
+                return res.status(400).json({
+                    message:"Invalid Position. No pay configuration error",
+                });
+            }
+            updates.position=positionDetails.name,
+            updates.pay=positionDetails.pay,
+            updates.payPeriod=positionDetails.payPeriod
+
+        }
+
         const employee = await Employee.findByIdAndUpdate(employeeId,
             { $set: updates },
             {
