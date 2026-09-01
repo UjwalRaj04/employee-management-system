@@ -32,11 +32,11 @@ const createEmployee = async (req, res) => {
                 message: "Employee with this email already exists"
             });
         }
-        console.log("POSITION FROM REQUEST:", position);
+        
         const positionDetails = await Position.findOne({
             name: position,
         });
-        console.log("POSITION FOUND:", positionDetails);
+        
         if (!positionDetails) {
             return res.status(400).json({
                 message: "Invalid position. No pay configuration found",
