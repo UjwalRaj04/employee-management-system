@@ -3,7 +3,7 @@ const Position = require("../models/Position");
 //creating an employee
 const createEmployee = async (req, res) => {
     try {
-        console.log("CREATE EMPLOYEE CALLED");
+
         const {
             name,
             email,
@@ -32,22 +32,27 @@ const createEmployee = async (req, res) => {
                 message: "Employee with this email already exists"
             });
         }
-        
+
         const positionDetails = await Position.findOne({
             name: position,
         });
-        
+
         if (!positionDetails) {
             return res.status(400).json({
                 message: "Invalid position. No pay configuration found",
             });
         }
-        updates.position = positionDetails.name;
-        updates.pay = positionDetails.pay;
-        updates.payPeriod = positionDetails.payPeriod;
+
 
         const employee = await Employee.create({
-            name, email, phone, position: positionDetails.name, location, joiningDate, pay: positionDetails.pay, payPeriod: positionDetails.payPeriod,
+            name,
+            email,
+            phone,
+            position: positionDetails.name,
+            location,
+            joiningDate,
+            pay: positionDetails.pay,
+            payPeriod: positionDetails.payPeriod,
         });
         res.status(201).json({
             message: "Employee created Successfully", employee
