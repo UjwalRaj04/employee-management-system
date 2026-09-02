@@ -1,7 +1,6 @@
-const { get } = require("mongoose");
 
 const getBusinessYear = (date = new Date()) => {
-    const currentDate = new Date(Date);
+    const currentDate = new Date(date);
 
     const year = currentDate.getFullYear();
 
