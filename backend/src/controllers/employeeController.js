@@ -11,6 +11,7 @@ const createEmployee = async (req, res) => {
             position,
             location,
             joiningDate,
+            dateOfBirth,
         } = req.body
         if (
             !name ||
@@ -51,6 +52,7 @@ const createEmployee = async (req, res) => {
             position: positionDetails.name,
             location,
             joiningDate,
+            dateOfBirth,
             pay: positionDetails.pay,
             payPeriod: positionDetails.payPeriod,
         });
