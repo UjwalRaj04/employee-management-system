@@ -38,7 +38,10 @@ const employeeSchema = new mongoose.Schema(
             type: Date,
             required: true
         },
-
+        dateOfBirth:{
+            type:Date,
+            required:true,
+        },
         status: {
             type: String,
             enum: ["active", "inactive"],
