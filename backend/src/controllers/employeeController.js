@@ -19,7 +19,8 @@ const createEmployee = async (req, res) => {
             !phone ||
             !position ||
             !location ||
-            !joiningDate
+            !joiningDate || 
+            !dateOfBirth
         ) {
             return res.status(400).json({
                 message: "All employee fields are required",
