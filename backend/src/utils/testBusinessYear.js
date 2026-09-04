@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const BusinessYear = require("../models/businessYear");
-require("dotenv").config();
+require("dotenv").config({
+    path:"../.env"
+});
 const createBusinessYear = async () => {
     try {
         await mongoose.connect(process.env.MONGO_URL);
