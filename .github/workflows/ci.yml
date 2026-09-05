@@ -1,17 +1,15 @@
-name: Backend CI
+name: Fullstack CI
 
 on:
   push:
     branches: [ "main", "master" ]
   pull_request:
     branches: [ "main", "master" ]
-env:
-    ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
 jobs:
-  build-and-test:
+  # --- TEST BACKEND ---
+  test-backend:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -21,10 +19,34 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Install Dependencies
+      - name: Install Backend Dependencies
         working-directory: ./backend
         run: npm ci
 
-      - name: Run Tests
+      - name: Run Backend Tests
         working-directory: ./backend
         run: npm test --if-present
+
+  # --- TEST FRONTEND ---
+  test-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Run Frontend Tests
+        working-directory: ./frontend
+        run: npm test --if-present
+
+      - name: Build Frontend
+        working-directory: ./frontend
+        run: npm run build --if-present
