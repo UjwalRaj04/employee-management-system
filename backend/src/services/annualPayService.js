@@ -46,10 +46,21 @@ const applyAnnualPayIncrease = async () => {
         await businessYear.save(); 
 
         return{
-            message:"Annual pay increase applied sucessfully"
-        }
+            message:"Annual pay increase applied sucessfully",
+            businessYear:currentBusinessYear,
+            increase:businessYear.payIncreaseAmount,
+            employeesUpdated:employees.length
+
+        };
     }
     catch (error) {
+         console.error(
+            "Annual pay increase error:",
+            error
+        );
 
+        throw error;
     }
-}
+};
+
+module.exports=applyAnnualPayIncrease;
