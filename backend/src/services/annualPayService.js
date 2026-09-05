@@ -26,7 +26,28 @@ const applyAnnualPayIncrease = async () => {
 
         }
 
-        const 
+        const employees=await Employee.find({
+            position:{
+                $in:["Team Member","Team Leader"]
+            },
+            payPeriod:"hourly",
+            status:"active"
+        });
+
+        console.log("Eligible Employees:",employees.length);
+
+        for(const employee of employees){
+            employee.pay=employee.pay+businessYear.payIncreaseAmount;
+
+            await employee.save();
+        }
+
+        businessYear.payIncreaseApplied=true;
+        await businessYear.save(); 
+
+        return{
+            message:"Annual pay increase applied sucessfully"
+        }
     }
     catch (error) {
 
