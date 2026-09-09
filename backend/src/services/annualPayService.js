@@ -19,13 +19,16 @@ const applyAnnualPayIncrease = async () => {
 
         }
 
+        console.log("business year found:",businessYear.year);
+
         if (businessYear.payIncreaseApplied) {
             throw new Error(
                 `Pay Increase for ${currentBusinessYear} has already been applied`
             );
 
         }
-
+        console.log("Pay Increase:",businessYear.payIncreaseAmount)
+        /*
         const employees=await Employee.find({
             position:{
                 $in:["Team Member","Team Leader"]
@@ -51,7 +54,7 @@ const applyAnnualPayIncrease = async () => {
             increase:businessYear.payIncreaseAmount,
             employeesUpdated:employees.length
 
-        };
+        };*/
     }
     catch (error) {
          console.error(
