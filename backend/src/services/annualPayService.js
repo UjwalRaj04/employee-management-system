@@ -28,7 +28,7 @@ const applyAnnualPayIncrease = async () => {
 
         }
         console.log("Pay Increase:",businessYear.payIncreaseAmount)
-        /*
+        
         const employees=await Employee.find({
             position:{
                 $in:["Team Member","Team Leader"]
@@ -38,6 +38,15 @@ const applyAnnualPayIncrease = async () => {
         });
 
         console.log("Eligible Employees:",employees.length);
+
+        if(employees.length===0){
+            return{
+                message:"No eligible employees found",
+                businessYear:currentBusinessYear,
+                increase:businessYear.payIncreaseAmount,
+                employeesUpdated:0
+            };
+        }
 
         for(const employee of employees){
             employee.pay=employee.pay+businessYear.payIncreaseAmount;
@@ -54,7 +63,7 @@ const applyAnnualPayIncrease = async () => {
             increase:businessYear.payIncreaseAmount,
             employeesUpdated:employees.length
 
-        };*/
+        };
     }
     catch (error) {
          console.error(
