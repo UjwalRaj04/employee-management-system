@@ -1,33 +1,45 @@
-
 const mongoose = require("mongoose");
-const path = require("path");
-require("dotenv").config({
-    path: path.join(__dirname, "../.env")
-});
+
+const connectDB = require("../config/db");
 const applyAnnualPayIncrease = require("../services/annualPayService");
 
 
-console.log(
-    "MONGO_URI:",
-    process.env.MONGO_URI ? "FOUND" : "NOT FOUND"
-);
 const testAnnualPay = async () => {
-    try {
-        await mongoose.connect(process.env.MONGO_URI);
-        console.log("MongoDB Connected");
 
+    try {
+
+        console.log("Starting annual pay test...");
+
+
+        // Connect to MongoDB
+        await connectDB();
+
+
+        // Run the annual pay service
         const result = await applyAnnualPayIncrease();
 
-        console.log("Result");
+
+        // Display the result
+        console.log("Result:");
         console.log(result);
 
+
+        // Close MongoDB connection
         await mongoose.connection.close();
-        console.log("MongoDB Connection Closed");
+
+        console.log("MongoDB connection closed");
+
+
+    } catch (error) {
+
+        console.error(
+            "Test Error:",
+            error.message
+        );
+
     }
-    catch (error) {
-        console.error("Test Error", error.message);
-        await mongoose.connection.close();
-    }
+
 };
+
 
 testAnnualPay();
