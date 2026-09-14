@@ -30,6 +30,22 @@ const applyAnnualPayIncrease = async () => {
 
         }
         console.log("Pay Increase:",businessYear.payIncreaseAmount)
+
+        const positions=await Position.find({
+            name:{
+                $in:["Team Member","Team Leader"]
+            }
+        });
+        console.log("Eligible Positions:",positions.length);
+
+        for(const position of positions){
+            console.log(position.name,
+                "Current Pay:",
+                position.pay,
+                "Pay Period:",
+                position.payPeriod
+            );
+        }
         
         const employees=await Employee.find({
             position:{
