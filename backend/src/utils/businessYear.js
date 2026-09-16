@@ -14,4 +14,3 @@ const getBusinessYear = (date = new Date()) => {
 };
 
 module.exports=getBusinessYear;
-console.log(getBusinessYear("2026-03-31"));
