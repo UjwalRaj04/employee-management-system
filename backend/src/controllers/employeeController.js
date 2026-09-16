@@ -71,6 +71,15 @@ const createEmployee = async (req, res) => {
 const getEmployees = async (req, res) => {
     try {
         const employees = await Employee.find({});
+
+        if (employees.length === 0) {
+            return res.status(200).json({
+                message: "No employees found in the database",
+                count: 0,
+                employees: [],
+            });
+        }
+
         res.status(200).json({
             message: "Employees retrieved successfully",
             count: employees.length,
@@ -113,7 +122,9 @@ const updateEmployee = async (req, res) => {
     try {
         const employeeId = req.params.id
 
-        const updates = req.body
+        const updates = { ...req.body }
+        delete updates.pay
+        delete updates.payPeriod
 
         if(updates.position){
             const positionDetails=await Position.findOne({

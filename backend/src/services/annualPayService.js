@@ -31,10 +31,13 @@ const applyAnnualPayIncrease = async () => {
         }
         console.log("Pay Increase:",businessYear.payIncreaseAmount)
 
+        const eligiblePositionNames = ["Team Member", "Team Leader"];
+
         const positions=await Position.find({
             name:{
-                $in:["Team Member","Team Leader"]
-            }
+                $in: eligiblePositionNames
+            },
+            payPeriod:"hourly"
         });
         console.log("Eligible Positions:",positions.length);
 
@@ -49,7 +52,7 @@ const applyAnnualPayIncrease = async () => {
         
         const employees=await Employee.find({
             position:{
-                $in:["Team Member","Team Leader"]
+                $in: eligiblePositionNames
             },
             payPeriod:"hourly",
             status:"active"
@@ -57,30 +60,33 @@ const applyAnnualPayIncrease = async () => {
 
         console.log("Eligible Employees:",employees.length);
 
-        if(employees.length===0){
-            return{
-                message:"No eligible employees found",
-                businessYear:currentBusinessYear,
-                increase:businessYear.payIncreaseAmount,
-                employeesUpdated:0
-            };
-        }
-
         for(const employee of employees){
             employee.pay=employee.pay+businessYear.payIncreaseAmount;
 
             await employee.save();
         }
 
+        for(const position of positions){
+            position.pay=position.pay+businessYear.payIncreaseAmount;
+            await position.save();
+        }
+
         businessYear.payIncreaseApplied=true;
         await businessYear.save(); 
 
         return{
-            message:"Annual pay increase applied sucessfully",
+            message: employees.length === 0
+                ? "No eligible employees found. Position rates were still updated."
+                : "Annual pay increase applied sucessfully",
             businessYear:currentBusinessYear,
             increase:businessYear.payIncreaseAmount,
-            employeesUpdated:employees.length
-
+            employeesUpdated:employees.length,
+            positionsUpdated:positions.length,
+            updatedPositions: positions.map((position) => ({
+                name: position.name,
+                pay: position.pay,
+                payPeriod: position.payPeriod,
+            })),
         };
     }
     catch (error) {
