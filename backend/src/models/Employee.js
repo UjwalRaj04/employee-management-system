@@ -59,7 +59,11 @@ const employeeSchema = new mongoose.Schema(
             enum:["hourly","monthly"],
             required:true,
             
-         }
+         },
+        branch:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Branch",
+        }
     },
 {
     timestamps: true,
