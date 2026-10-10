@@ -1,4 +1,5 @@
 const express = require("express");
+const { protect, authorize } = require("../middleware/authMiddleware");
 
 const {
   createBranch,
@@ -10,19 +11,10 @@ const {
 
 const router = express.Router();
 
-// Create a branch
-router.post("/", createBranch);
-
-// Get all branches
-router.get("/", getBranches);
-
-// Get one branch
-router.get("/:id", getBranchById);
-
-// Update a branch
-router.put("/:id", updateBranch);
-
-// Delete a branch
-router.delete("/:id", deleteBranch);
+router.get("/", protect, getBranches);
+router.get("/:id", protect, getBranchById);
+router.post("/", protect, authorize("admin"), createBranch);
+router.put("/:id", protect, authorize("admin"), updateBranch);
+router.delete("/:id", protect, authorize("admin"), deleteBranch);
 
 module.exports = router;
