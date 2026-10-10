@@ -18,11 +18,6 @@ router.post(
 );
 router.get("/", protect, authorize("admin", "manager"), getPayrollRuns);
 router.get("/me", protect, getMyPayslips);
-router.get(
-    "/:period",
-    protect,
-    authorize("admin", "manager"),
-    getPayrollByPeriod
-);
+router.get("/:period",protect,authorize("admin", "manager"),getPayrollByPeriod);
 
 module.exports = router;
