@@ -1,5 +1,6 @@
 const Employee = require("../models/Employee")
 const Position = require("../models/Position");
+const Branch=require("../models/Branch")
 //creating an employee
 const createEmployee = async (req, res) => {
     try {
