@@ -28,11 +28,18 @@ const userSchema = new mongoose.Schema(
       default: "employee",
     },
 
+    organisationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Orangnisation",
+      default: null,
+    },
+
     status: {
       type: String,
       enum: ["active", "inactive"],
       default: "active",
     },
+
   },
   {
     timestamps: true,
