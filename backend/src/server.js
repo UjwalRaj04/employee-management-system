@@ -10,6 +10,7 @@ const businessYearRoutes = require("./routes/businessYearRoutes");
 const annualPayRoutes = require("./routes/annualPayRoutes");
 const payrollRoutes = require("./routes/payrollRoutes");
 const branchRoutes = require("./routes/branchRoutes");
+const organisationRoutes = require("./routes/organisationRoutes");
 const app = express();
 
 app.use(cors());
@@ -22,7 +23,7 @@ app.use("/api/business-years", businessYearRoutes);
 app.use("/api/annual-pay", annualPayRoutes);
 app.use("/api/payroll", payrollRoutes);
 app.use("/api/branches", branchRoutes);
-
+app.use("/api/organisations", organisationRoutes);
 app.get("/", (req, res) => {
   res.json({
     message: "ShiftMate API is running",
