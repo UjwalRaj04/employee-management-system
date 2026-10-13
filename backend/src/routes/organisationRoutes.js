@@ -25,9 +25,7 @@ router.get(
     (req, res) => {
         return res.status(200).json({
             message: "Organisation context verified successfully",
-
             organisation: req.organisation,
-
             user: {
                 id: req.user.id,
                 name: req.user.name,
