@@ -29,7 +29,7 @@ const protect = async (req, res, next) => {
 
     try {
         const user = await User.findById(decoded.id).select(
-            "_id name email role organisation"
+            "_id name email role organisationId"
         );
 
         if (!user) {
