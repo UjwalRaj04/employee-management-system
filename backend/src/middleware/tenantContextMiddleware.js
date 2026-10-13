@@ -2,7 +2,7 @@ const mongoose=require("mongoose");
 const Organisation=require("../models/Organisation");
 
 const requireOrganisationContext=async(req,res,next)=>{
-    if(!req.user||req.user.id){
+    if(!req.user||!req.user.id){
         return res.status(401).json({
             message:"Authentication required",
         });
