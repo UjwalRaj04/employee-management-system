@@ -4,19 +4,39 @@ const {
     registerOrganisation,
 } = require("../controllers/organisationController");
 
+const {
+    protect,
+} = require("../middleware/authMiddleware");
+
+const {
+    requireOrganisationContext,
+} = require("../middleware/tenantContextMiddleware");
+
 const router = express.Router();
 
+// Public endpoint: Register a new organisation and its first admin.
+router.post("/register", registerOrganisation);
 
-// ============================================
-// REGISTER A NEW ORGANISATION
-// POST /api/organisations/register
-// Public route: no login required
-// ============================================
+// Protected endpoint: Get the authenticated user's organisation.
+router.get(
+    "/me",
+    protect,
+    requireOrganisationContext,
+    (req, res) => {
+        return res.status(200).json({
+            message: "Organisation context verified successfully",
 
-router.post(
-    "/register",
-    registerOrganisation
+            organisation: req.organisation,
+
+            user: {
+                id: req.user.id,
+                name: req.user.name,
+                email: req.user.email,
+                role: req.user.role,
+                organisationId: req.user.organisationId,
+            },
+        });
+    }
 );
-
 
 module.exports = router;
