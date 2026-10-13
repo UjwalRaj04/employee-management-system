@@ -2,6 +2,12 @@ const mongoose = require("mongoose");
 
 const employeeSchema = new mongoose.Schema(
     {
+        organisationId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Organisation",
+            required: true,
+        },
+        
         name: {
             type: String,
             required: true,
@@ -38,9 +44,9 @@ const employeeSchema = new mongoose.Schema(
             type: Date,
             required: true
         },
-        dateOfBirth:{
-            type:String,
-            required:true,
+        dateOfBirth: {
+            type: String,
+            required: true,
         },
         status: {
             type: String,
@@ -54,19 +60,19 @@ const employeeSchema = new mongoose.Schema(
             min: 0,
         },
 
-        payPeriod:{
-            type:String,
-            enum:["hourly","monthly"],
-            required:true,
-            
-         },
-        branch:{
-            type:mongoose.Schema.Types.ObjectId,
-            ref:"Branch",
+        payPeriod: {
+            type: String,
+            enum: ["hourly", "monthly"],
+            required: true,
+
+        },
+        branch: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Branch",
         }
     },
-{
-    timestamps: true,
+    {
+        timestamps: true,
     }
 );
 
