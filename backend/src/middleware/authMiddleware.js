@@ -1,27 +1,60 @@
 const jwt = require("jsonwebtoken")
-const User = require("../models/User")
-const protect=async(req,res,next)=>{
-    const authHeader=req.headers.authorization;
+const User = require("../models/User");
+const Organisation = require("../models/Organisation");
+const protect = async (req, res, next) => {
+    const authHeader = req.headers.authorization;
 
-    if(!authHeader|| !authHeader.startsWith("Bearer")){
+    if (!authHeader || !authHeader.startsWith("Bearer")) {
         return res.status(401).json({
-            message:"No token provided",
+            message: "No token provided",
         });
     }
-    const token=authHeader.split(" ")[1];
+    const token = authHeader.split(" ")[1];
 
-    if(!token){
+    if (!token) {
         return res.status(401).json({
-            message:"No token provided",
+            message: "No token provided",
         });
     }
 
     let decoded;
 
-    try{
-        
+    try {
+        decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (error) {
+        return res.status(401).json({
+            message: "Invalid or expired token",
+        });
     }
-}
+
+    try {
+        const user = await User.findById(decoded.id).select(
+            "_id name email role organisation"
+        );
+
+        if (!user) {
+            return res.status(401).json({
+                message: "User account not found",
+            });
+        }
+        req.user = {
+            id: user._id.toString(),
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            organisationId: user.organisationId ?
+                user.organisationId.toString() : null,
+        };
+        return next();
+    }
+    catch(error){
+        console.error("Authentication middleware error:",error);
+
+        return res.status(500).json({
+            message:"Unable to authenticate user",
+        });
+    }
+};
 
 const authorize = (...allowredRoles) => {
     return (req, res, next) => {
