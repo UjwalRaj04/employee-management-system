@@ -1,10 +1,28 @@
-const Employee = require("../models/Employee")
+const Employee = require("../models/Employee");
 const Position = require("../models/Position");
-const Branch=require("../models/Branch")
-//creating an employee
-const createEmployee = async (req, res) => {
-    try {
 
+// Get the verified organisation ID from tenant-context middleware.
+const getOrganisationId = (req, res) => {
+    if (!req.organisationId) {
+        res.status(403).json({
+            message: "Organisation context required",
+        });
+
+        return null;
+    }
+
+    return req.organisationId;
+};
+
+// Create an employee.
+const createEmployee = async (req, res) => {
+    const organisationId = getOrganisationId(req, res);
+
+    if (!organisationId) {
+        return;
+    }
+
+    try {
         const {
             name,
             email,
@@ -13,14 +31,15 @@ const createEmployee = async (req, res) => {
             location,
             joiningDate,
             dateOfBirth,
-        } = req.body
+        } = req.body;
+
         if (
             !name ||
             !email ||
             !phone ||
             !position ||
             !location ||
-            !joiningDate || 
+            !joiningDate ||
             !dateOfBirth
         ) {
             return res.status(400).json({
@@ -28,14 +47,22 @@ const createEmployee = async (req, res) => {
             });
         }
 
-        const exisitngEmployee = await Employee.findOne({ email });
+        // Normalise email before searching or saving.
+        const normalisedEmail = email.trim().toLowerCase();
 
-        if (exisitngEmployee) {
-            return res.status(400).json({
-                message: "Employee with this email already exists"
+        // Check for an existing employee within this organisation.
+        const existingEmployee = await Employee.findOne({
+            email: normalisedEmail,
+            organisationId,
+        });
+
+        if (existingEmployee) {
+            return res.status(409).json({
+                message: "Employee with this email already exists",
             });
         }
 
+        // Find the configured position and its pay details.
         const positionDetails = await Position.findOne({
             name: position,
         });
@@ -46,10 +73,12 @@ const createEmployee = async (req, res) => {
             });
         }
 
-
+        // The organisation ID comes from verified tenant context,
+        // not from the request body.
         const employee = await Employee.create({
-            name,
-            email,
+            organisationId,
+            name: name.trim(),
+            email: normalisedEmail,
             phone,
             position: positionDetails.name,
             location,
@@ -58,93 +87,187 @@ const createEmployee = async (req, res) => {
             pay: positionDetails.pay,
             payPeriod: positionDetails.payPeriod,
         });
-        res.status(201).json({
-            message: "Employee created Successfully", employee
-        });
-    }
-    catch (error) {
-        console.error("Create employee error:", error);
-        res.status(500).json({
-            message: "Server Error"
-        })
-    }
-}
-const getEmployees = async (req, res) => {
-    try {
-        const employees = await Employee.find({});
 
-        if (employees.length === 0) {
-            return res.status(200).json({
-                message: "No employees found in the database",
-                count: 0,
-                employees: [],
+        return res.status(201).json({
+            message: "Employee created successfully",
+            employee,
+        });
+    } catch (error) {
+        console.error("Create employee error:", error);
+
+        if (error.code === 11000) {
+            return res.status(409).json({
+                message: "An employee with this email already exists",
             });
         }
 
-        res.status(200).json({
-            message: "Employees retrieved successfully",
-            count: employees.length,
-            employees
-        });
+        if (error.name === "ValidationError") {
+            return res.status(400).json({
+                message: "Employee validation failed",
+                errors: Object.values(error.errors).map(
+                    (item) => item.message
+                ),
+            });
+        }
 
-    }
-    catch (error) {
-        console.error("Get employees error:", error);
-        res.status(500).json({
+        return res.status(500).json({
             message: "Server error",
         });
     }
 };
 
-const getEmployeesById = async (req, res) => {
-    try {
-        const employeeId = req.params.id;
+// Get employees belonging only to the authenticated organisation.
+const getEmployees = async (req, res) => {
+    const organisationId = getOrganisationId(req, res);
 
-        const employee = await Employee.findById(employeeId);
+    if (!organisationId) {
+        return;
+    }
+
+    try {
+        const employees = await Employee.find({
+            organisationId,
+        });
+
+        return res.status(200).json({
+            message:
+                employees.length === 0
+                    ? "No employees found for this organisation"
+                    : "Employees retrieved successfully",
+            count: employees.length,
+            employees,
+        });
+    } catch (error) {
+        console.error("Get employees error:", error);
+
+        return res.status(500).json({
+            message: "Server error",
+        });
+    }
+};
+
+// Get one employee, provided the employee belongs to this organisation.
+const getEmployeesById = async (req, res) => {
+    const organisationId = getOrganisationId(req, res);
+
+    if (!organisationId) {
+        return;
+    }
+
+    try {
+        const employee = await Employee.findOne({
+            _id: req.params.id,
+            organisationId,
+        });
 
         if (!employee) {
             return res.status(404).json({
                 message: "Employee not found",
             });
         }
-        res.status(200).json({
-            message: "Employee Retrieved Successfully", employee
+
+        return res.status(200).json({
+            message: "Employee retrieved successfully",
+            employee,
         });
-    }
-    catch (error) {
+    } catch (error) {
+        console.error("Get employee by ID error:", error);
 
-        console.error("Get Employee by ID error:", error)
-        return res.status(500).json({
-            message: "Server error"
-        });
-    }
-}
-const updateEmployee = async (req, res) => {
-    try {
-        const employeeId = req.params.id
-
-        const updates = { ...req.body }
-        delete updates.pay
-        delete updates.payPeriod
-
-        if(updates.position){
-            const positionDetails=await Position.findOne({
-                name:updates.position,
+        if (error.name === "CastError") {
+            return res.status(400).json({
+                message: "Invalid employee ID",
             });
-
-            if(!positionDetails){
-                return res.status(400).json({
-                    message:"Invalid Position. No pay configuration error",
-                });
-            }
-            updates.position=positionDetails.name,
-            updates.pay=positionDetails.pay,
-            updates.payPeriod=positionDetails.payPeriod
-
         }
 
-        const employee = await Employee.findByIdAndUpdate(employeeId,
-            { $set: updates },
+        return res.status(500).json({
+            message: "Server error",
+        });
+    }
+};
+
+// Update an employee belonging to this organisation.
+const updateEmployee = async (req, res) => {
+    const organisationId = getOrganisationId(req, res);
+
+    if (!organisationId) {
+        return;
+    }
+
+    try {
+        // Only allow approved fields to be updated.
+        // Clients cannot change organisationId, pay or payPeriod directly.
+        const allowedFields = [
+            "name",
+            "email",
+            "phone",
+            "position",
+            "location",
+            "joiningDate",
+            "dateOfBirth",
+            "status",
+        ];
+
+        const updates = {};
+
+        for (const field of allowedFields) {
+            if (
+                Object.prototype.hasOwnProperty.call(req.body, field)
+            ) {
+                updates[field] = req.body[field];
+            }
+        }
+
+        if (Object.keys(updates).length === 0) {
+            return res.status(400).json({
+                message: "No valid employee fields supplied for update",
+            });
+        }
+
+        // Normalise email if it is being updated.
+        if (typeof updates.email === "string") {
+            updates.email = updates.email.trim().toLowerCase();
+
+            const duplicateEmployee = await Employee.findOne({
+                email: updates.email,
+                organisationId,
+                _id: { $ne: req.params.id },
+            });
+
+            if (duplicateEmployee) {
+                return res.status(409).json({
+                    message:
+                        "Another employee in this organisation uses this email",
+                });
+            }
+        }
+
+        // Recalculate pay from the configured position.
+        if (updates.position) {
+            const positionDetails = await Position.findOne({
+                name: updates.position,
+            });
+
+            if (!positionDetails) {
+                return res.status(400).json({
+                    message:
+                        "Invalid position. No pay configuration found",
+                });
+            }
+
+            updates.position = positionDetails.name;
+            updates.pay = positionDetails.pay;
+            updates.payPeriod = positionDetails.payPeriod;
+        }
+
+        // Both the employee ID and organisation ID are required.
+        const employee = await Employee.findOneAndUpdate(
+            {
+                _id: req.params.id,
+                organisationId,
+            },
+            {
+                $set: updates,
+            },
             {
                 returnDocument: "after",
                 runValidators: true,
@@ -153,44 +276,87 @@ const updateEmployee = async (req, res) => {
 
         if (!employee) {
             return res.status(404).json({
-                message: "Employee not found"
+                message: "Employee not found",
             });
         }
 
-        res.status(200).json({
-            message: "Employee Updated Successfully", employee
+        return res.status(200).json({
+            message: "Employee updated successfully",
+            employee,
         });
-    }
-    catch (error) {
-        console.error("Update Employee error:", error)
+    } catch (error) {
+        console.error("Update employee error:", error);
 
-        res.status(500).json({
-            message: "Server Error"
+        if (error.name === "CastError") {
+            return res.status(400).json({
+                message: "Invalid employee ID or field value",
+            });
+        }
+
+        if (error.name === "ValidationError") {
+            return res.status(400).json({
+                message: "Employee validation failed",
+                errors: Object.values(error.errors).map(
+                    (item) => item.message
+                ),
+            });
+        }
+
+        if (error.code === 11000) {
+            return res.status(409).json({
+                message: "An employee with this email already exists",
+            });
+        }
+
+        return res.status(500).json({
+            message: "Server error",
         });
     }
 };
-const deleteEmployee = async (req, res) => {
-    try {
-        const employeeId = req.params.id;
 
-        const employee = await Employee.findByIdAndDelete(employeeId);
+// Delete an employee belonging to this organisation.
+const deleteEmployee = async (req, res) => {
+    const organisationId = getOrganisationId(req, res);
+
+    if (!organisationId) {
+        return;
+    }
+
+    try {
+        const employee = await Employee.findOneAndDelete({
+            _id: req.params.id,
+            organisationId,
+        });
 
         if (!employee) {
             return res.status(404).json({
-                message: "Employee Not Found",
+                message: "Employee not found",
             });
         }
 
-        res.status(200).json({
-            message: "Employee Deleted Successfully", employee
+        return res.status(200).json({
+            message: "Employee deleted successfully",
+            employee,
         });
-    }
-    catch (error) {
-        console.error("Delete Employee error:", error)
+    } catch (error) {
+        console.error("Delete employee error:", error);
 
-        res.status(500).json({
-            message: "Server Error"
+        if (error.name === "CastError") {
+            return res.status(400).json({
+                message: "Invalid employee ID",
+            });
+        }
+
+        return res.status(500).json({
+            message: "Server error",
         });
     }
 };
-module.exports = { createEmployee, getEmployees, getEmployeesById, updateEmployee, deleteEmployee };
+
+module.exports = {
+    createEmployee,
+    getEmployees,
+    getEmployeesById,
+    updateEmployee,
+    deleteEmployee,
+};
