@@ -75,7 +75,10 @@ const employeeSchema = new mongoose.Schema(
         timestamps: true,
     }
 );
-
+employeeSchema.index(
+  { organisationId: 1, email: 1 },
+  { unique: true }
+);
 const Employee = mongoose.model("Employee", employeeSchema);
 
 module.exports = Employee;
