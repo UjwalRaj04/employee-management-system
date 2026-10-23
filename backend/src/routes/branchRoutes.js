@@ -10,11 +10,18 @@ const {
   getBranchById,
   updateBranch,
   deleteBranch,
+  getBranchEmployees,
 } = require("../controllers/branchController");
 
 const router = express.Router();
 
 router.get("/", protect, requireOrganisationContext, getBranches);
+router.get(
+  "/:id/employees",
+  protect,
+  requireOrganisationContext,
+  getBranchEmployees
+);
 router.get("/:id", protect, requireOrganisationContext, getBranchById);
 router.post(
   "/",
