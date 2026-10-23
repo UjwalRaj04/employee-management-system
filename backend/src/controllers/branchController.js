@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const Branch = require("../models/Branch");
+const Employee = require("../models/Employee");
+const Shift = require("../models/Shift");
 const { getOrganisationId } = require("../utils/organisationContext");
 
 const handleError = (res, error, label) => {
@@ -199,6 +201,26 @@ const deleteBranch = async (req, res) => {
       });
     }
 
+    const assignedEmployees = await Employee.countDocuments({
+      organisationId,
+      branch: branch._id,
+    });
+
+    const scheduledShifts = await Shift.countDocuments({
+      organisationId,
+      branch: branch._id,
+      status: "scheduled",
+    });
+
+    if (assignedEmployees > 0 || scheduledShifts > 0) {
+      return res.status(409).json({
+        message:
+          "Cannot delete a branch that still has employees or scheduled shifts",
+        assignedEmployees,
+        scheduledShifts,
+      });
+    }
+
     await branch.deleteOne();
 
     res.status(200).json({
@@ -209,10 +231,55 @@ const deleteBranch = async (req, res) => {
   }
 };
 
+const getBranchEmployees = async (req, res) => {
+  const organisationId = getOrganisationId(req, res);
+
+  if (!organisationId) {
+    return;
+  }
+
+  try {
+    if (isInvalidId(req.params.id)) {
+      return res.status(400).json({
+        message: "Invalid branch ID",
+      });
+    }
+
+    const branch = await Branch.findOne({
+      _id: req.params.id,
+      organisationId,
+    });
+
+    if (!branch) {
+      return res.status(404).json({
+        message: "Branch not found",
+      });
+    }
+
+    const employees = await Employee.find({
+      organisationId,
+      branch: branch._id,
+    }).sort({ name: 1 });
+
+    res.status(200).json({
+      message:
+        employees.length === 0
+          ? "No employees assigned to this branch"
+          : "Branch employees retrieved successfully",
+      branch,
+      count: employees.length,
+      employees,
+    });
+  } catch (error) {
+    handleError(res, error, "Get branch employees error");
+  }
+};
+
 module.exports = {
   createBranch,
   getBranches,
   getBranchById,
   updateBranch,
   deleteBranch,
+  getBranchEmployees,
 };
