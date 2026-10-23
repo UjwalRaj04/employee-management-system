@@ -7,17 +7,33 @@ const {
     getMyPayslips,
 } = require("../controllers/payrollController");
 const { protect, authorize } = require("../middleware/authMiddleware");
+const {
+    requireOrganisationContext,
+} = require("../middleware/tenantContextMiddleware");
 
 const router = express.Router();
 
 router.post(
     "/generate",
     protect,
+    requireOrganisationContext,
     authorize("admin"),
     generatePayrollRun
 );
-router.get("/", protect, authorize("admin", "manager"), getPayrollRuns);
-router.get("/me", protect, getMyPayslips);
-router.get("/:period",protect,authorize("admin", "manager"),getPayrollByPeriod);
+router.get(
+    "/",
+    protect,
+    requireOrganisationContext,
+    authorize("admin", "manager"),
+    getPayrollRuns
+);
+router.get("/me", protect, requireOrganisationContext, getMyPayslips);
+router.get(
+    "/:period",
+    protect,
+    requireOrganisationContext,
+    authorize("admin", "manager"),
+    getPayrollByPeriod
+);
 
 module.exports = router;

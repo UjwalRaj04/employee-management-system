@@ -46,7 +46,16 @@ const calculatePayslipAmounts = (employee, hoursWorked) => {
     };
 };
 
-const generatePayroll = async ({ period, hoursByEmployee = {}, generatedBy }) => {
+const generatePayroll = async ({
+    organisationId,
+    period,
+    hoursByEmployee = {},
+    generatedBy,
+}) => {
+    if (!organisationId) {
+        throw new Error("Organisation context is required");
+    }
+
     if (!period) {
         throw new Error("Payroll period is required");
     }
@@ -54,7 +63,10 @@ const generatePayroll = async ({ period, hoursByEmployee = {}, generatedBy }) =>
     const periodDate = parsePeriod(period);
     const businessYear = getBusinessYear(periodDate);
 
-    const existingRun = await PayrollRun.findOne({ period });
+    const existingRun = await PayrollRun.findOne({
+        period,
+        organisationId,
+    });
 
     if (existingRun) {
         throw new Error(
@@ -62,7 +74,10 @@ const generatePayroll = async ({ period, hoursByEmployee = {}, generatedBy }) =>
         );
     }
 
-    const employees = await Employee.find({ status: "active" });
+    const employees = await Employee.find({
+        organisationId,
+        status: "active",
+    });
 
     if (employees.length === 0) {
         throw new Error("No active employees found for payroll");
@@ -81,6 +96,7 @@ const generatePayroll = async ({ period, hoursByEmployee = {}, generatedBy }) =>
         );
 
         return {
+            organisationId,
             employee: employee._id,
             employeeName: employee.name,
             employeeEmail: employee.email,
@@ -102,6 +118,7 @@ const generatePayroll = async ({ period, hoursByEmployee = {}, generatedBy }) =>
     );
 
     const payrollRun = await PayrollRun.create({
+        organisationId,
         period,
         businessYear,
         status: "generated",
@@ -124,14 +141,20 @@ const generatePayroll = async ({ period, hoursByEmployee = {}, generatedBy }) =>
     };
 };
 
-const getPayrollRunByPeriod = async (period) => {
-    const payrollRun = await PayrollRun.findOne({ period });
+const getPayrollRunByPeriod = async (organisationId, period) => {
+    const payrollRun = await PayrollRun.findOne({
+        period,
+        organisationId,
+    });
 
     if (!payrollRun) {
         return null;
     }
 
-    const payslips = await Payslip.find({ period }).sort({ employeeName: 1 });
+    const payslips = await Payslip.find({
+        period,
+        organisationId,
+    }).sort({ employeeName: 1 });
 
     return { payrollRun, payslips };
 };

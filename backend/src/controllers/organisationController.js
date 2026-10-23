@@ -3,6 +3,8 @@ const bcrypt = require("bcryptjs");
 
 const Organisation = require("../models/Organisation");
 const User = require("../models/User");
+const Position = require("../models/Position");
+const defaultPositions = require("../utils/defaultPositions");
 
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -136,6 +138,14 @@ const registerOrganisation = async (req, res) => {
       );
 
       createdAdmin = users[0];
+
+      await Position.create(
+        defaultPositions.map((position) => ({
+          ...position,
+          organisationId: createdOrganisation._id,
+        })),
+        { session }
+      );
     });
 
     return res.status(201).json({

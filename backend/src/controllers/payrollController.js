@@ -4,12 +4,20 @@ const {
 } = require("../services/payrollService");
 const PayrollRun = require("../models/PayrollRun");
 const Payslip = require("../models/Payslip");
+const { getOrganisationId } = require("../utils/organisationContext");
 
 const generatePayrollRun = async (req, res) => {
+    const organisationId = getOrganisationId(req, res);
+
+    if (!organisationId) {
+        return;
+    }
+
     try {
         const { period, hoursByEmployee } = req.body;
 
         const result = await generatePayroll({
+            organisationId,
             period,
             hoursByEmployee,
             generatedBy: req.user.email,
@@ -25,6 +33,7 @@ const generatePayrollRun = async (req, res) => {
             "already been generated",
             "No active employees",
             "month must be",
+            "Organisation context",
         ];
 
         const isClientError = knownErrors.some((text) =>
@@ -38,8 +47,16 @@ const generatePayrollRun = async (req, res) => {
 };
 
 const getPayrollRuns = async (req, res) => {
+    const organisationId = getOrganisationId(req, res);
+
+    if (!organisationId) {
+        return;
+    }
+
     try {
-        const payrollRuns = await PayrollRun.find({}).sort({ period: -1 });
+        const payrollRuns = await PayrollRun.find({ organisationId }).sort({
+            period: -1,
+        });
 
         if (payrollRuns.length === 0) {
             return res.status(200).json({
@@ -63,8 +80,17 @@ const getPayrollRuns = async (req, res) => {
 };
 
 const getPayrollByPeriod = async (req, res) => {
+    const organisationId = getOrganisationId(req, res);
+
+    if (!organisationId) {
+        return;
+    }
+
     try {
-        const result = await getPayrollRunByPeriod(req.params.period);
+        const result = await getPayrollRunByPeriod(
+            organisationId,
+            req.params.period
+        );
 
         if (!result) {
             return res.status(404).json({
@@ -86,8 +112,15 @@ const getPayrollByPeriod = async (req, res) => {
 };
 
 const getMyPayslips = async (req, res) => {
+    const organisationId = getOrganisationId(req, res);
+
+    if (!organisationId) {
+        return;
+    }
+
     try {
         const payslips = await Payslip.find({
+            organisationId,
             employeeEmail: req.user.email,
         }).sort({ period: -1 });
 

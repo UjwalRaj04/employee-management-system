@@ -1,45 +1,32 @@
 const mongoose = require("mongoose");
-require("dotenv").config()
+require("dotenv").config();
 const connectDB = require("../config/db");
 const applyAnnualPayIncrease = require("../services/annualPayService");
 
-
 const testAnnualPay = async () => {
-
     try {
-
         console.log("Starting annual pay test...");
 
-
-        // Connect to MongoDB
         await connectDB();
 
+        const organisationId = process.env.ORGANISATION_ID;
 
-        // Run the annual pay service
-        const result = await applyAnnualPayIncrease();
+        if (!organisationId) {
+            throw new Error("Set ORGANISATION_ID before running the annual pay test");
+        }
 
+        const result = await applyAnnualPayIncrease(organisationId);
 
-        // Display the result
         console.log("Result:");
         console.log(result);
 
-
-        // Close MongoDB connection
         await mongoose.connection.close();
 
         console.log("MongoDB connection closed");
-
-
     } catch (error) {
-
-        console.error(
-            "Test Error:",
-            error.message
-        );
-
+        console.error("Test Error:", error.message);
+        await mongoose.connection.close();
     }
-
 };
-
 
 testAnnualPay();

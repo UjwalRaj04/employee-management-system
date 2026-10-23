@@ -1,18 +1,6 @@
 const Employee = require("../models/Employee");
 const Position = require("../models/Position");
-
-// Get the verified organisation ID from tenant-context middleware.
-const getOrganisationId = (req, res) => {
-    if (!req.organisationId) {
-        res.status(403).json({
-            message: "Organisation context required",
-        });
-
-        return null;
-    }
-
-    return req.organisationId;
-};
+const { getOrganisationId } = require("../utils/organisationContext");
 
 // Create an employee.
 const createEmployee = async (req, res) => {
@@ -65,6 +53,7 @@ const createEmployee = async (req, res) => {
         // Find the configured position and its pay details.
         const positionDetails = await Position.findOne({
             name: position,
+            organisationId,
         });
 
         if (!positionDetails) {
@@ -245,6 +234,7 @@ const updateEmployee = async (req, res) => {
         if (updates.position) {
             const positionDetails = await Position.findOne({
                 name: updates.position,
+                organisationId,
             });
 
             if (!positionDetails) {

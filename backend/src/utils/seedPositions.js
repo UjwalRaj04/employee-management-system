@@ -2,27 +2,47 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 
 const connectDB = require("../config/db");
+const Organisation = require("../models/Organisation");
 const Position = require("../models/Position");
-
-const defaultPositions = [
-    { name: "Team Member", pay: 12.71, payPeriod: "hourly" },
-    { name: "Team Leader", pay: 13.50, payPeriod: "hourly" },
-    { name: "Assistant Manager", pay: 35000, payPeriod: "monthly" },
-    { name: "Manager / GM", pay: 45000, payPeriod: "monthly" },
-];
+const defaultPositions = require("./defaultPositions");
 
 const seedPositions = async () => {
     try {
         await connectDB();
 
-        for (const position of defaultPositions) {
-            const saved = await Position.findOneAndUpdate(
-                { name: position.name },
-                { $set: position },
-                { upsert: true, returnDocument: "after" }
-            );
+        const organisations = process.env.ORGANISATION_ID
+            ? await Organisation.find({ _id: process.env.ORGANISATION_ID })
+            : await Organisation.find({});
 
-            console.log("Position ready:", saved.name, saved.pay, saved.payPeriod);
+        if (organisations.length === 0) {
+            throw new Error(
+                "No organisations found. Register an organisation first or set ORGANISATION_ID."
+            );
+        }
+
+        for (const organisation of organisations) {
+            for (const position of defaultPositions) {
+                const saved = await Position.findOneAndUpdate(
+                    {
+                        organisationId: organisation._id,
+                        name: position.name,
+                    },
+                    {
+                        $set: {
+                            ...position,
+                            organisationId: organisation._id,
+                        },
+                    },
+                    { upsert: true, returnDocument: "after" }
+                );
+
+                console.log(
+                    organisation.slug,
+                    saved.name,
+                    saved.pay,
+                    saved.payPeriod
+                );
+            }
         }
 
         await mongoose.connection.close();

@@ -37,13 +37,24 @@ const loginUser = async (req, res) => {
       });
     }
 
+    if (user.role !== "platformAdmin" && !user.organisationId) {
+      return res.status(403).json({
+        message: "Your account is not associated with an organisation",
+      });
+    }
+
     // Create JWT token
+    const organisationId = user.organisationId
+      ? user.organisationId.toString()
+      : null;
+
     const token = jwt.sign(
       {
         id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
+        organisationId,
       },
       process.env.JWT_SECRET,
       {
@@ -60,6 +71,7 @@ const loginUser = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        organisationId,
       },
     });
   } catch (error) {
@@ -79,6 +91,7 @@ const getProfile=(req,res)=>{
       name:req.user.name,
       email:req.user.email,
       role:req.user.role,
+      organisationId: req.user.organisationId,
     },
   });
 };

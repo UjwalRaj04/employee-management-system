@@ -1,10 +1,15 @@
 const mongoose=require("mongoose")
 const branchSchema=new mongoose.Schema(
     {
+        organisationId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Organisation",
+            required: true,
+            index: true,
+        },
         name:{
             type:String,
             required:true,
-            unique:true,
             trim:true,
         },
         address:{
@@ -31,6 +36,11 @@ const branchSchema=new mongoose.Schema(
     {
         timestamps:true,
     }
+);
+
+branchSchema.index(
+    { organisationId: 1, name: 1 },
+    { unique: true }
 );
 
 const Branch=mongoose.model("Branch",branchSchema);

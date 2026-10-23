@@ -30,8 +30,9 @@ const userSchema = new mongoose.Schema(
 
     organisationId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Orangnisation",
+      ref: "Organisation",
       default: null,
+      index: true,
     },
 
     status: {

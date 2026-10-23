@@ -1,10 +1,15 @@
 const mongoose=require("mongoose");
 
 const businessYearSchema=new mongoose.Schema({
+    organisationId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Organisation",
+        required: true,
+        index: true,
+    },
     year:{
         type:String,
         required:true,
-        unique:true,
         trim:true,
     },
 
@@ -23,6 +28,11 @@ const businessYearSchema=new mongoose.Schema({
 {
     timestamps:true,
 }
+);
+
+businessYearSchema.index(
+    { organisationId: 1, year: 1 },
+    { unique: true }
 );
 
 const BusinessYear=mongoose.model("BusinessYear",businessYearSchema);

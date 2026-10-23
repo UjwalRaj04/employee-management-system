@@ -3,9 +3,14 @@ const mongoose=require("mongoose");
 
 const positionSchema=new mongoose.Schema(
     {
+        organisationId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Organisation",
+            required: true,
+            index: true,
+        },
         name:{
             type:String,
-            unique:true,
             required:true,
             trim:true,
         },
@@ -25,6 +30,11 @@ const positionSchema=new mongoose.Schema(
         timestamps:true,
         collection:"Positions"
     }
+);
+
+positionSchema.index(
+    { organisationId: 1, name: 1 },
+    { unique: true }
 );
 
 const Position=mongoose.model("Position",positionSchema);

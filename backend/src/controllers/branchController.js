@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
-const Branch=require("../models/Branch");
-const Employee = require("../models/Employee");
+const Branch = require("../models/Branch");
+const { getOrganisationId } = require("../utils/organisationContext");
 
 const handleError = (res, error, label) => {
   console.error(`${label}:`, error);
@@ -25,18 +25,29 @@ const handleError = (res, error, label) => {
 
 const isInvalidId = (id) => !mongoose.isValidObjectId(id);
 
-const createBranch=async(req,res)=>{
-    try{
-        const {name,address,city,postcode,status}=req.body
+const createBranch = async (req, res) => {
+  const organisationId = getOrganisationId(req, res);
 
-        const existingBranch=await Branch.findOne({name});
+  if (!organisationId) {
+    return;
+  }
 
-        if(existingBranch){
-            return res.status(400).json({
-                message:"Branch already exists",
-            });
-        }
-        const branch = await Branch.create({
+  try {
+    const { name, address, city, postcode, status } = req.body;
+
+    const existingBranch = await Branch.findOne({
+      name,
+      organisationId,
+    });
+
+    if (existingBranch) {
+      return res.status(400).json({
+        message: "Branch already exists",
+      });
+    }
+
+    const branch = await Branch.create({
+      organisationId,
       name,
       address,
       city,
@@ -53,10 +64,15 @@ const createBranch=async(req,res)=>{
   }
 };
 
-// Get all branches
 const getBranches = async (req, res) => {
+  const organisationId = getOrganisationId(req, res);
+
+  if (!organisationId) {
+    return;
+  }
+
   try {
-    const branches = await Branch.find().sort({ name: 1 });
+    const branches = await Branch.find({ organisationId }).sort({ name: 1 });
 
     res.status(200).json({
       branches,
@@ -66,8 +82,13 @@ const getBranches = async (req, res) => {
   }
 };
 
-// Get one branch
 const getBranchById = async (req, res) => {
+  const organisationId = getOrganisationId(req, res);
+
+  if (!organisationId) {
+    return;
+  }
+
   try {
     if (isInvalidId(req.params.id)) {
       return res.status(400).json({
@@ -75,7 +96,10 @@ const getBranchById = async (req, res) => {
       });
     }
 
-    const branch = await Branch.findById(req.params.id);
+    const branch = await Branch.findOne({
+      _id: req.params.id,
+      organisationId,
+    });
 
     if (!branch) {
       return res.status(404).json({
@@ -91,8 +115,13 @@ const getBranchById = async (req, res) => {
   }
 };
 
-// Update branch
 const updateBranch = async (req, res) => {
+  const organisationId = getOrganisationId(req, res);
+
+  if (!organisationId) {
+    return;
+  }
+
   try {
     if (isInvalidId(req.params.id)) {
       return res.status(400).json({
@@ -103,7 +132,10 @@ const updateBranch = async (req, res) => {
     const { address, city, postcode, status } = req.body;
     const name = req.body.name?.trim();
 
-    const branch = await Branch.findById(req.params.id);
+    const branch = await Branch.findOne({
+      _id: req.params.id,
+      organisationId,
+    });
 
     if (!branch) {
       return res.status(404).json({
@@ -111,10 +143,10 @@ const updateBranch = async (req, res) => {
       });
     }
 
-    // Prevent renaming to a name another branch already uses
     if (name !== undefined && name !== branch.name) {
       const duplicate = await Branch.findOne({
         name,
+        organisationId,
         _id: { $ne: branch._id },
       });
 
@@ -125,7 +157,6 @@ const updateBranch = async (req, res) => {
       }
     }
 
-    // Update only the fields provided
     if (name !== undefined) branch.name = name;
     if (address !== undefined) branch.address = address;
     if (city !== undefined) branch.city = city;
@@ -143,8 +174,13 @@ const updateBranch = async (req, res) => {
   }
 };
 
-// Delete branch
 const deleteBranch = async (req, res) => {
+  const organisationId = getOrganisationId(req, res);
+
+  if (!organisationId) {
+    return;
+  }
+
   try {
     if (isInvalidId(req.params.id)) {
       return res.status(400).json({
@@ -152,7 +188,10 @@ const deleteBranch = async (req, res) => {
       });
     }
 
-    const branch = await Branch.findById(req.params.id);
+    const branch = await Branch.findOne({
+      _id: req.params.id,
+      organisationId,
+    });
 
     if (!branch) {
       return res.status(404).json({

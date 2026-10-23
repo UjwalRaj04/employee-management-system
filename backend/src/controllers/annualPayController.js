@@ -1,8 +1,15 @@
 const applyAnnualPayIncrease = require("../services/annualPayService");
+const { getOrganisationId } = require("../utils/organisationContext");
 
 const applyPayIncrease = async (req, res) => {
+    const organisationId = getOrganisationId(req, res);
+
+    if (!organisationId) {
+        return;
+    }
+
     try {
-        const result = await applyAnnualPayIncrease();
+        const result = await applyAnnualPayIncrease(organisationId);
 
         res.status(200).json(result);
     } catch (error) {
@@ -11,6 +18,7 @@ const applyPayIncrease = async (req, res) => {
         const knownErrors = [
             "was not found",
             "has already been applied",
+            "Organisation context",
         ];
 
         const isClientError = knownErrors.some((text) =>

@@ -2,6 +2,12 @@ const mongoose = require("mongoose");
 
 const payslipSchema = new mongoose.Schema(
     {
+        organisationId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Organisation",
+            required: true,
+            index: true,
+        },
         payrollRun: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "PayrollRun",
@@ -79,7 +85,10 @@ const payslipSchema = new mongoose.Schema(
     }
 );
 
-payslipSchema.index({ employee: 1, period: 1 }, { unique: true });
+payslipSchema.index(
+    { organisationId: 1, employee: 1, period: 1 },
+    { unique: true }
+);
 
 const Payslip = mongoose.model("Payslip", payslipSchema);
 

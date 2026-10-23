@@ -2,6 +2,13 @@ const mongoose = require("mongoose");
 
 const shiftSchema = new mongoose.Schema(
   {
+    organisationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Organisation",
+      required: true,
+      index: true,
+    },
+
     branch: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Branch",
@@ -66,7 +73,7 @@ const shiftSchema = new mongoose.Schema(
 );
 
 // Speeds up the queries we'll run constantly
-shiftSchema.index({ employee: 1, startTime: 1 });
-shiftSchema.index({ branch: 1, startTime: 1 });
+shiftSchema.index({ organisationId: 1, employee: 1, startTime: 1 });
+shiftSchema.index({ organisationId: 1, branch: 1, startTime: 1 });
 
 module.exports = mongoose.model("Shift", shiftSchema);
