@@ -1,6 +1,10 @@
 const Employee = require("../models/Employee");
 const Position = require("../models/Position");
 const { getOrganisationId } = require("../utils/organisationContext");
+const {
+    findOrganisationBranch,
+} = require("../utils/tenantResources");
+const ClientError = require("../utils/clientError");
 
 // Create an employee.
 const createEmployee = async (req, res) => {
@@ -19,6 +23,7 @@ const createEmployee = async (req, res) => {
             location,
             joiningDate,
             dateOfBirth,
+            branch,
         } = req.body;
 
         if (
@@ -62,6 +67,16 @@ const createEmployee = async (req, res) => {
             });
         }
 
+        let branchId;
+
+        if (branch) {
+            const branchDetails = await findOrganisationBranch(
+                organisationId,
+                branch
+            );
+            branchId = branchDetails._id;
+        }
+
         // The organisation ID comes from verified tenant context,
         // not from the request body.
         const employee = await Employee.create({
@@ -75,6 +90,7 @@ const createEmployee = async (req, res) => {
             dateOfBirth,
             pay: positionDetails.pay,
             payPeriod: positionDetails.payPeriod,
+            branch: branchId,
         });
 
         return res.status(201).json({
@@ -82,6 +98,12 @@ const createEmployee = async (req, res) => {
             employee,
         });
     } catch (error) {
+        if (error instanceof ClientError) {
+            return res.status(error.status).json({
+                message: error.message,
+            });
+        }
+
         console.error("Create employee error:", error);
 
         if (error.code === 11000) {
@@ -114,9 +136,16 @@ const getEmployees = async (req, res) => {
     }
 
     try {
-        const employees = await Employee.find({
-            organisationId,
-        });
+        const query = { organisationId };
+
+        if (req.query.branch) {
+            query.branch = req.query.branch;
+        }
+
+        const employees = await Employee.find(query).populate(
+            "branch",
+            "name city status"
+        );
 
         return res.status(200).json({
             message:
@@ -147,7 +176,7 @@ const getEmployeesById = async (req, res) => {
         const employee = await Employee.findOne({
             _id: req.params.id,
             organisationId,
-        });
+        }).populate("branch", "name city status");
 
         if (!employee) {
             return res.status(404).json({
@@ -194,6 +223,7 @@ const updateEmployee = async (req, res) => {
             "joiningDate",
             "dateOfBirth",
             "status",
+            "branch",
         ];
 
         const updates = {};
@@ -249,6 +279,18 @@ const updateEmployee = async (req, res) => {
             updates.payPeriod = positionDetails.payPeriod;
         }
 
+        if (Object.prototype.hasOwnProperty.call(updates, "branch")) {
+            if (updates.branch === null || updates.branch === "") {
+                updates.branch = null;
+            } else {
+                const branchDetails = await findOrganisationBranch(
+                    organisationId,
+                    updates.branch
+                );
+                updates.branch = branchDetails._id;
+            }
+        }
+
         // Both the employee ID and organisation ID are required.
         const employee = await Employee.findOneAndUpdate(
             {
@@ -275,6 +317,12 @@ const updateEmployee = async (req, res) => {
             employee,
         });
     } catch (error) {
+        if (error instanceof ClientError) {
+            return res.status(error.status).json({
+                message: error.message,
+            });
+        }
+
         console.error("Update employee error:", error);
 
         if (error.name === "CastError") {
