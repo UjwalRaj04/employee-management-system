@@ -214,7 +214,7 @@ Install the following before running the project:
 ### 1. Clone the Repository
 
 ```bash
-git clone <YOUR_GITHUB_REPOSITORY_URL>
+git clone https://github.com/UjwalRaj04/employee-management-system.git
 ```
 
 Navigate into the project:
