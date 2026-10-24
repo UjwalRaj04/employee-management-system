@@ -8,10 +8,10 @@
     "dev": "nodemon src/server.js",
     "seed:positions": "node src/utils/seedPositions.js",
     "test:annual-pay": "node src/utils/testAnnualPay.js",
+    "test:shift-scheduling": "node src/utils/testShiftScheduling.js",
     "check:employees-org": "node checkEmployeesWithoutOrganisation.js",
     "check:organisations": "node checkOrganisations.js",
-    "migrate:tenants": "node src/utils/migrateLegacyTenants.js",
-    "test": "node src/utils/testShiftScheduling.js"
+    "migrate:tenants": "node src/utils/migrateLegacyTenants.js"
   },
   "keywords": [],
   "author": "",
