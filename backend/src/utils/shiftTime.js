@@ -8,52 +8,54 @@ const WEEKDAY_MAP = {
     Thu: 4,
     Fri: 5,
     Sat: 6,
-}
+};
 
-const shiftsOverlap = (startA, endA, startB, endB) => {
+const shiftsOverlap = (startA, endA, startB, endB) =>
     startA < endB && startB < endA;
 
-    const parseHHMM = (value) => {
-        if (typeof value !== "string" || !/^\d{2}:\d{2}$/.test(value)) {
-            throw new Error("Time must be in HH:MM format");
+const parseHHMM = (value) => {
+    if (typeof value !== "string" || !/^\d{2}:\d{2}$/.test(value)) {
+        throw new Error("Time must be in HH:MM format");
+    }
+
+    const hours = Number(value.slice(0, 2));
+    const minutes = Number(value.slice(3, 5));
+
+    if (hours > 23 || minutes > 59) {
+        throw new Error("Time must be a valid HH:MM value");
+    }
+
+    return hours * 60 + minutes;
+};
+
+const formatHHMM = (totalMinutes) => {
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+};
+
+const londonParts = (date) => {
+    const parts = {};
+
+    for (const part of new Intl.DateTimeFormat("en-GB", {
+        timeZone: LONDON,
+        weekday: "short",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23",
+    }).formatToParts(date)) {
+        if (part.type !== "literal") {
+            parts[part.type] = part.value;
         }
+    }
 
-        const hours = Number(value.slice(0, 2));
-        const minutes = Number(value.slice(3, 5));
+    return parts;
+};
 
-
-        if (hours > 23 || minutes > 59) {
-            throw new Error("Time must be a valid HH:MM value");
-        }
-        return hours * 60 + minutes;
-    };
-
-    const formatHHMM = (totalMinutes) => {
-        const hours = Math.floor(totalMinutes / 60)
-        const minutes=totalMinutes%60;
-        return `${String(hours).padStart(2,"0")}:${String(minutes).padStart(2,"0")}`;
-
-    };
-    const londonParts=(date)=>{
-        const parts={};
-        for(const part of new Intl.DateTimeFormat("en-GB",{
-            timeZone:LONDON,
-            weekday:"short",
-            year:"numeric",
-            month:"2-digit",
-            day:"2-digit",
-            hour:"2-digit",
-            minute:"2-digit",
-            hourCycle:"h23",
-        }).formatToParts(date)){
-            if(part.type !== "literal"){
-                parts[part.type]=part.value;
-            }
-        }
-
-        return parts;
-    };
-    const londonWeekday = (date) => WEEKDAY_MAP[londonParts(date).weekday];
+const londonWeekday = (date) => WEEKDAY_MAP[londonParts(date).weekday];
 
 const londonMinutes = (date) => {
     const parts = londonParts(date);
@@ -197,6 +199,3 @@ module.exports = {
     shiftSegments,
     availabilityCoversShift,
 };
-
-
-}
