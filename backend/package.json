@@ -10,7 +10,8 @@
     "test:annual-pay": "node src/utils/testAnnualPay.js",
     "check:employees-org": "node checkEmployeesWithoutOrganisation.js",
     "check:organisations": "node checkOrganisations.js",
-    "migrate:tenants": "node src/utils/migrateLegacyTenants.js"
+    "migrate:tenants": "node src/utils/migrateLegacyTenants.js",
+    "test": "node src/utils/testShiftScheduling.js"
   },
   "keywords": [],
   "author": "",
