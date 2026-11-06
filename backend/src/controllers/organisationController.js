@@ -119,7 +119,7 @@ const registerOrganisation = async (req, res) => {
 
       const organisations = await Organisation.create(
         [{ name, slug: normalisedSlug }],
-        { session, ordered:true }
+        { session}
       );
 
       createdOrganisation = organisations[0];
@@ -144,7 +144,7 @@ const registerOrganisation = async (req, res) => {
           ...position,
           organisationId: createdOrganisation._id,
         })),
-        { session }
+        { session, ordered:true }
       );
     });
 
