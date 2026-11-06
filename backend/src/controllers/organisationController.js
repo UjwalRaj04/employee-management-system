@@ -101,7 +101,7 @@ const registerOrganisation = async (req, res) => {
     // Create the organisation and its first admin in one transaction,
     // so you can never end up with one but not the other
     await session.withTransaction(async () => {
-      const existingOrganisation = await Organisation.findOne({
+         const existingOrganisation = await Organisation.findOne({
         slug: normalisedSlug,
       }).session(session);
 
