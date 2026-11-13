@@ -6,6 +6,7 @@ const {
     getEmployeesById,
     updateEmployee,
     deleteEmployee,
+    inviteEmployee,
 } = require("../controllers/employeeController");
 
 const {
@@ -19,8 +20,11 @@ const {
 
 const router = express.Router();
 
-// Create an employee.
-// Authentication -> Organisation verification -> Permission check -> Controller
+// ==========================================
+// EMPLOYEE ROUTES
+// ==========================================
+
+// Create employee
 router.post(
     "/",
     protect,
@@ -29,7 +33,7 @@ router.post(
     createEmployee
 );
 
-// Get all employees belonging to the authenticated organisation.
+// Get all employees
 router.get(
     "/",
     protect,
@@ -37,7 +41,7 @@ router.get(
     getEmployees
 );
 
-// Get one employee belonging to the authenticated organisation.
+// Get employee by ID
 router.get(
     "/:id",
     protect,
@@ -45,7 +49,7 @@ router.get(
     getEmployeesById
 );
 
-// Update an employee belonging to the authenticated organisation.
+// Update employee
 router.put(
     "/:id",
     protect,
@@ -54,13 +58,26 @@ router.put(
     updateEmployee
 );
 
-// Delete an employee belonging to the authenticated organisation.
+// Delete employee
 router.delete(
     "/:id",
     protect,
     requireOrganisationContext,
     authorize("admin"),
     deleteEmployee
+);
+
+// ==========================================
+// EMPLOYEE INVITATION ROUTE
+// ==========================================
+
+// Invite employee to create their ShiftMate account
+router.post(
+    "/:id/invite",
+    protect,
+    requireOrganisationContext,
+    authorize("admin"),
+    inviteEmployee
 );
 
 module.exports = router;
